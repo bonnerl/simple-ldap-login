@@ -200,13 +200,16 @@ class SimpleLDAPLogin {
 	}
 
 	function authenticate ($user, $username, $password) {
+
 		// If previous authentication succeeded, respect that
-		if ( is_a($user, 'WP_User') ) { return $user; }
-		
-		// Determine if user a local admin
-		$local_admin = false;
-		$user_obj = get_user_by('login', $username); 
-		if( user_can($user_obj, 'update_core') ) $local_admin = true;
+		if ( is_a($user, 'WP_User') )
+			return $user;
+
+		// Get the user's WP account
+		$user = get_user_by('login', $username);
+
+		// Find out if the user is a super admin on multisite else an admin
+		$super_admin = ( $user ) ? is_super_admin( $user->ID ) : false;
 		
 		if ( empty($username) || empty($password) ) {
 			$error = new WP_Error();
@@ -220,20 +223,25 @@ class SimpleLDAPLogin {
 			return $error;
 		}
 		
-		// If high security mode is enabled, remove default WP authentication hook
-		if ( str_true( $this->get_setting('high_security') ) && ! $local_admin ) {
+		// If high security mode is enabled and user isn't a super admin.
+		if ( str_true( $this->get_setting('high_security') ) && ! $super_admin ) {
+			// remove default WP authentication hook
 			remove_filter('authenticate', 'wp_authenticate_username_password', 20, 3);
 		}
 
 		// Sweet, let's try to authenticate our user and pass against LDAP
 		$auth_result = $this->ldap_auth($username, $password, $this->get_setting('directory') );
 
-		// If LDAP did not authenticate the user and high security mode is enabled.
-		if( ! $auth_result && str_true($this->get_setting('high_security')) )
-			return new WP_Error('invalid_username', __('<strong>Simple LDAP Login</strong>: Simple LDAP Login could not authenticate your credentials. The security settings do not permit trying the WordPress user database as a fallback.'));
+		// If LDAP did not authenticate the user.
+		if( ! $auth_result ) {
 
-		// If LDAP did not authenticate the user and high security mod is disabled
-		if ( ! $auth_result ) {
+			// If high security mode is enabled.
+			if ( str_true($this->get_setting('high_security')) ) {
+				// Prevent the default authentication.
+				return new WP_Error('invalid_username', __('<strong>Simple LDAP Login</strong>: Simple LDAP Login could not authenticate your credentials. The security settings do not permit trying the WordPress user database as a fallback.'));
+			}
+
+			// If LDAP did not authenticate the user and high security mode is disabled
 			do_action($this->prefix . 'auth_failure');
 			return false;
 		}
@@ -246,15 +254,16 @@ class SimpleLDAPLogin {
 		if( ! $this->user_has_groups( $username, $this->get_setting('directory') ) )
 			return new WP_Error("{$this->prefix}login_error", __('<strong>Simple LDAP Login Error</strong>: Your LDAP credentials are correct, but you are not in an authorized LDAP group.'));
 
-		// Get the user's WP account
-		$user = get_user_by('login', $username);
-
 		// If user does not exist or
 		if ( ! $user ) {
 
 			// If user account creation is disabled.
 			if( ! str_true($this->get_setting('create_users')) ) {
+				
+				// Tell plugins about the failed login.
 				do_action( 'wp_login_failed', $username );
+
+				// Return error.
 				return new WP_Error('invalid_username', __('<strong>Simple LDAP Login Error</strong>: LDAP credentials are correct, but there is no matching WordPress user and user creation is not enabled.'));
 			}
 
@@ -265,7 +274,11 @@ class SimpleLDAPLogin {
 
 			// Make sure there wasn't an error adding the user.
 			if( is_wp_error($new_user) ) {
+
+				// Tell plugins about the failed login.
 				do_action( 'wp_login_failed', $username );
+
+				// Return error.
 				return new WP_Error("{$this->prefix}login_error", __('<strong>Simple LDAP Login Error</strong>: LDAP credentials are correct and user creation is allowed but an error occurred creating the user in WordPress. Actual error: '. $new_user->get_error_message() ));
 			}
 
@@ -281,9 +294,14 @@ class SimpleLDAPLogin {
 
 			// Make sure there wasn't an error adding the user.
 			if ( is_wp_error($added) ) {
+
+				// Tell plugins about the failed login.
 				do_action( 'wp_login_failed', $username );
+
+				// Return error.
 				return new WP_Error("{$this->prefix}login_error", __('<strong>Simple LDAP Login Error</strong>: LDAP credentials are correct and user creation is allowed but an error occurred while adding the user to this site. Actual error: '. $new_user->get_error_message() ));
 			}
+
 		}
 
 		// Allow filtering of the user.
