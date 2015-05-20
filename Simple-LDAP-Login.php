@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: Simple LDAP Login
+Plugin Name: HPU Simple LDAP Login
 Plugin URI: http://clifgriffin.com/simple-ldap-login/
 Description:  Authenticate WordPress against LDAP.
-Version: 1.5.5
+Version: 2.0-beta
 Author: Clif Griffin Development Inc.
 Author URI: http://cgd.io
 */
@@ -67,7 +67,7 @@ class SimpleLDAPLogin {
 		$this->add_setting('enabled', "false");
 
 		if( $this->get_setting('version') === false ) {
-			$this->set_setting('version', '1.5');
+			$this->set_setting('version', '2.0-beta');
 			$this->set_setting('enabled', 'true');
 
 			if ( $this->set_setting('account_suffix', get_option('simpleldap_account_suffix')) ) {
