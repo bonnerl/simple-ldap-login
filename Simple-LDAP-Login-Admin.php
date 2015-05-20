@@ -82,7 +82,7 @@ if( isset( $_GET[ 'tab' ] ) ) {
 					<th scope="row" valign="top">LDAP Exclusive</th>
 					<td>
 						<input type="hidden" name="<?php echo $this->get_field_name('high_security'); ?>" value="false" />
-						<label><input type="checkbox" name="<?php echo $this->get_field_name('high_security'); ?>" value="true" <?php if( str_true($this->get_setting('high_security')) ) echo "checked"; ?> /> Force all logins to authenticate against LDAP. Do NOT fallback to default authentication for existing users.<br/>Formerly known as high security mode.</label><br/>
+						<label><input type="checkbox" name="<?php echo $this->get_field_name('high_security'); ?>" value="true" <?php if( str_true($this->get_setting('high_security')) ) echo "checked"; ?> /> Force all logins to authenticate against LDAP. Do NOT fallback to default authentication for existing users.</label>
 					</td>
 				</tr>
 				<tr>
