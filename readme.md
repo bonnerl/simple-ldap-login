@@ -1,9 +1,8 @@
 # Plugin Name #
 **Contributors:** clifgriffin  
-**Donate link:** http://cgd.io  
 **Tags:** LDAP, authentication, login, active directory, adLDAP  
 **Requires at least:** 3.4  
-**Tested up to:** 3.6  
+**Tested up to:** 4.2.2
 **Stable tag:** 1.5.5  
 **License:** GPLv2 or later  
 
@@ -59,6 +58,12 @@ I have spent some time completely rewriting Simple LDAP Login from the ground up
 **If you have any problems with 1.5, please let me know:** clifgriffin@gmail.com    
 
 ## Changelog ##
+
+**Version 2.0-beta**
+
+* Prevent adding super admins to subsites.
+* Add existing users to blog.
+
 **Version 1.5.5**
 
 * Fix syntax error.
