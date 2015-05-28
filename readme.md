@@ -59,7 +59,7 @@ I have spent some time completely rewriting Simple LDAP Login from the ground up
 
 ## Changelog ##
 
-**Version 2.0-beta**
+**Version 2.0**
 
 * Prevent adding super admins to subsites.
 * Add existing users to blog.
